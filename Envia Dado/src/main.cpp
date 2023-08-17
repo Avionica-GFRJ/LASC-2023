@@ -29,6 +29,7 @@ unsigned long idadeInfo;
 void setup() {
   
   Serial.begin(9600);
+  serial1.begin(9600);
 
   /* Inicialização do BMP280 */
   Serial.println(F("Inicializando BMP280"));
@@ -36,7 +37,6 @@ void setup() {
   if (!bmp.begin(0x76)) {
     Serial.println(F("Não foi possível achar o sensor, cheque a conexão "
                       "ou tente outro endereço!"));
-    while (1) delay(10);
   }
 
   /* Default settings from datasheet. */
@@ -51,11 +51,10 @@ void setup() {
   Wire.begin();
 
   delay(100);
-  while (sensor.wakeup() == false)
+  if (sensor.wakeup() == false)
   {
     Serial.print(millis());
     Serial.println("\tNão foi possível conectar o GY521");
-    delay(200);
   }
   sensor.setAccelSensitivity(2);  //  8g
   sensor.setGyroSensitivity(1);   //  500 degrees/s
