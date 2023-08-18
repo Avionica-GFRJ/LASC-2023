@@ -3,6 +3,7 @@
 #include "GY521.h"
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
+#include <SPI.h>
 #include <LoRa.h>
 
 Adafruit_BMP280 bmp;    ///< Definição I2C do BMP
