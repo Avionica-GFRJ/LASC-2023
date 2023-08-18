@@ -11,10 +11,7 @@
 #define LORA_IRQ 26 
 
 // Frequência do LORA -> 433hz ou 915hz
-#define LORA_BAND 433E6
-// Contadores
-int counter = 0;
-int pacote = 1;
+#define LORA_BAND 915E6
 
 String data;
 void onReceive(int packetSize) {
