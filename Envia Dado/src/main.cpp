@@ -3,6 +3,7 @@
 #include "GY521.h"
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
+#include <LoRa.h>
 
 Adafruit_BMP280 bmp;    ///< Definição I2C do BMP
 
@@ -25,6 +26,32 @@ TinyGPS gps1;
 /* Declaração das variáveis do GPS */
 long latitude, longitude;
 unsigned long idadeInfo;
+
+// Pinout do LORA
+#define LORA_MISO 19
+#define LORA_CS 18
+#define LORA_MOSI 27
+#define LORA_SCK 5
+#define LORA_RST 14
+#define LORA_IRQ 26 
+// Frequência do LORA -> 433hz ou 915hz
+#define LORA_BAND 915E6
+
+
+// Função de inicialização do Lora
+void initLoRa() {
+  Serial.println("Inicializando Lora ...");
+  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+  LoRa.setPins(LORA_CS, LORA_RST, LORA_IRQ);
+  // Start LoRa using the frequency
+  int result = LoRa.begin(LORA_BAND);
+  if (result != 1) {
+    Serial.println("Falha na inicialização do Lora");
+    for (;;);
+  }
+  Serial.println("LoRa inicializado");
+  delay(2000);
+}
 
 void setup() {
   
@@ -71,6 +98,10 @@ void setup() {
   sensor.gze = -0.676;
   /*-------------------------------------------------------------------------------------------*/
 
+  /* Inicialização do Lora */
+  Serial.println("Configurando LoRa Sender...");
+  initLoRa();
+  /*-------------------------------------------------------------------------------------------*/
 
 }
 
@@ -112,7 +143,12 @@ void loop() {
   
   /* Criando uma string para armazenar os dados e enviar através do Lora */
   char stemp [120];
-  sprintf(stemp, "* %10.6f ; %10.6f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f*", float(latitude) / 1000000, float(longitude) / 1000000, temperature, pressure, altitude, x, y, z);
+  int pacote = 1;
+  sprintf(stemp, "* %d ; %10.6f ; %10.6f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f*", pacote, float(latitude) / 1000000, float(longitude) / 1000000, temperature, pressure, altitude, x, y, z);
   Serial.println(stemp);
+  LoRa.beginPacket();
+  LoRa.print(stemp);
+  LoRa.endPacket();
+  pacote++;
 
 }
