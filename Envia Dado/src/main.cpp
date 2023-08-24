@@ -6,6 +6,8 @@
 #include <SPI.h>
 #include <LoRa.h>
 
+int pacote = 1;
+
 Adafruit_BMP280 bmp;    ///< Definição I2C do BMP
 
 GY521 sensor(0x68);     ///< Definição I2c do GY
@@ -13,7 +15,7 @@ GY521 sensor(0x68);     ///< Definição I2c do GY
 /* Declaração das variáveis do BMP */
 float temperature;  
 float pressure;
-int32_t altitude;
+float altitude;
 
 /* Declaração das variáveis do GY */
 float x;
@@ -107,6 +109,22 @@ void setup() {
 }
 
 void loop() {
+
+  /* Medidas do GPS */
+  bool recebido = false;          ///< Variável que indica se o sinal de GPS foi recebido
+
+  while (serial1.available()) {
+    char cIn = serial1.read();
+    recebido = gps1.encode(cIn); ///< Se receber o sinal a variável recebe o valor true
+  }
+
+
+  if (recebido) {
+    unsigned long idadeInfo;
+    gps1.get_position(&latitude, &longitude, &idadeInfo);     
+  }
+
+  /*-------------------------------------------------------------------------------------------*/
   
   /* Medidas do BMP */
   if (bmp.takeForcedMeasurement()) {
@@ -129,27 +147,17 @@ void loop() {
   float z = sensor.getAngleZ();
   /*-------------------------------------------------------------------------------------------*/
 
-  /* Medidas do GPS */
-  bool recebido = false;          ///< Variável que indica se o sinal de GPS foi recebido
 
-  while (serial1.available()) {
-    char cIn = serial1.read();
-    recebido = gps1.encode(cIn); ///< Se receber o sinal a variável recebe o valor true
-  }
-
-  if (recebido) {
-    gps1.get_position(&latitude, &longitude, &idadeInfo);
-  }
-  /*-------------------------------------------------------------------------------------------*/
   
   /* Criando uma string para armazenar os dados e enviar através do Lora */
   char stemp [120];
-  int pacote = 1;
-  sprintf(stemp, "* %d ; %10.6f ; %10.6f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f*", pacote, float(latitude) / 1000000, float(longitude) / 1000000, temperature, pressure, altitude, x, y, z);
+ 
+  sprintf(stemp, "* %d ; %10.6f ; %10.6f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f ; %10.2f*", pacote, float(latitude) / 1000000, float(longitude) / 1000000, temperature, pressure/ 100, altitude, x, y, z);
   Serial.println(stemp);
   LoRa.beginPacket();
   LoRa.print(stemp);
   LoRa.endPacket();
   pacote++;
+
 
 }

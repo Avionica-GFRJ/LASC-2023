@@ -7,7 +7,7 @@ uint32_t counter = 0;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println();
   Serial.println(__FILE__);
   Serial.print("GY521_LIB_VERSION: ");
