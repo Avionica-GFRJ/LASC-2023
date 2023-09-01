@@ -11,7 +11,7 @@
 #define LORA_IRQ 26 
 
 // Frequência do LORA -> 433hz ou 915hz
-#define LORA_BAND 915E6
+#define LORA_BAND 872E6
 
 String data;
 void onReceive(int packetSize) {
